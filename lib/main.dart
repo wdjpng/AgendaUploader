@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 void main() => runApp(MyApp());
 
@@ -26,7 +27,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   DateTime selectedDate = DateTime.now();
   DateTime initialDateTime;
-  String message = "31415926535";
+
   @override
   void initState() {
     super.initState();
@@ -43,6 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         selectedDate = picked;
       });
+    print('Date selected: ' + selectedDate.toIso8601String());
   }
 
   String getButtonText(){
@@ -54,8 +56,41 @@ class _MyHomePageState extends State<MyHomePage> {
         + '. ' + selectedDate.year.toString() + ' ist ausgewählt';
   }
 
+  void showErrorMessage(BuildContext context, String title, String message){
+    Alert(
+      context: context,
+      type: AlertType.error,
+      title: title,
+      desc: message,
+      buttons: [
+        DialogButton(
+          child: Text(
+            "OK",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: () => Navigator.pop(context),
+          width: 120,
+        )
+      ],
+    ).show();
+  }
+  void onUploadButtonPressed(BuildContext context, TextEditingController textEditingController){
+    String message = textEditingController.text;
+
+    if(message == "" || selectedDate == initialDateTime){
+      if(message == "" && selectedDate != initialDateTime){
+        showErrorMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte geben Sie eine Nachricht ein");
+      } else if(message != "" && selectedDate == initialDateTime){
+        showErrorMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte wählen Sie ein Datum aus");
+      } else{
+        showErrorMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte wählen Sie ein Datum aus und geben Sie bitte eine Nachricht ein");
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    TextEditingController messageText = new TextEditingController();
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -68,6 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
             new Container(
               width: 350.0,
               child:TextField(
+                  controller: messageText,
                   keyboardType: TextInputType.multiline,
                   maxLines: 2,
                   decoration: InputDecoration(
@@ -83,8 +119,8 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text(getButtonText()),
             ),
             FloatingActionButton(
-              onPressed: () => {},
-              tooltip: 'Increment',
+              onPressed: () => onUploadButtonPressed(context, messageText),
+              tooltip: 'Bestätigen',
               child: Icon(Icons.cloud_upload),
             ),
           ],
