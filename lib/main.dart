@@ -74,9 +74,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ],
     ).show();
   }
-  void onUploadButtonPressed(BuildContext context, TextEditingController textEditingController){
-    String message = textEditingController.text;
 
+  bool isCorrectUserData(String message, BuildContext context){
     if(message == "" || selectedDate == initialDateTime){
       if(message == "" && selectedDate != initialDateTime){
         showErrorMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte geben Sie eine Nachricht ein");
@@ -85,7 +84,25 @@ class _MyHomePageState extends State<MyHomePage> {
       } else{
         showErrorMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte wählen Sie ein Datum aus und geben Sie bitte eine Nachricht ein");
       }
+
+      return false;
     }
+
+    return true;
+  }
+
+  void pushEvent(String message){
+
+  }
+
+  void onUploadButtonPressed(BuildContext context, TextEditingController textEditingController){
+    String message = textEditingController.text;
+
+    if(!isCorrectUserData(message, context)){
+      return;
+    }
+
+    pushEvent(message);
   }
 
   @override
@@ -100,6 +117,12 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             SizedBox(height: 20.0,),
+            RaisedButton(
+              textColor: Colors.white,
+              color: Colors.lightBlue,
+              onPressed: () => _selectDate(context),
+              child: Text(getButtonText()),
+            ),
             new Container(
               width: 350.0,
               child:TextField(
@@ -111,12 +134,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       labelText: 'Nachricht'
                   )
               ),
-            ),
-            RaisedButton(
-              textColor: Colors.white,
-              color: Colors.lightBlue,
-              onPressed: () => _selectDate(context),
-              child: Text(getButtonText()),
             ),
             FloatingActionButton(
               onPressed: () => onUploadButtonPressed(context, messageText),
