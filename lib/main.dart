@@ -56,10 +56,10 @@ class _MyHomePageState extends State<MyHomePage> {
         + '. ' + selectedDate.year.toString() + ' ist ausgewählt';
   }
 
-  void showErrorMessage(BuildContext context, String title, String message){
+  void showMessage(BuildContext context, String title, String message, AlertType alertType){
     Alert(
       context: context,
-      type: AlertType.error,
+      type: alertType,
       title: title,
       desc: message,
       buttons: [
@@ -78,11 +78,11 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isCorrectUserData(String message, BuildContext context){
     if(message == "" || selectedDate == initialDateTime){
       if(message == "" && selectedDate != initialDateTime){
-        showErrorMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte geben Sie eine Nachricht ein");
+        showMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte geben Sie eine Nachricht ein", AlertType.error);
       } else if(message != "" && selectedDate == initialDateTime){
-        showErrorMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte wählen Sie ein Datum aus");
+        showMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte wählen Sie ein Datum aus",  AlertType.error);
       } else{
-        showErrorMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte wählen Sie ein Datum aus und geben Sie bitte eine Nachricht ein");
+        showMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte wählen Sie ein Datum aus und geben Sie bitte eine Nachricht ein",  AlertType.error);
       }
 
       return false;
