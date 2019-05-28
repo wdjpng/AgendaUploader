@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() => runApp(MyApp());
 
@@ -92,7 +93,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void pushEvent(String message){
+    selectedDate = initialDateTime;
+    Firestore.instance.collection('events').document()
+        .setData({ 'message': message, 'dateOfEvent': selectedDate });
 
+    showMessage(context, "DATEN ERFOLGREICH HOCHGELADEN", "", AlertType.success);
   }
 
   void onUploadButtonPressed(BuildContext context, TextEditingController textEditingController){
