@@ -26,6 +26,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  TextEditingController messageText = new TextEditingController();
+
   DateTime selectedDate = DateTime.now();
   DateTime initialDateTime;
 
@@ -112,7 +114,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController messageText = new TextEditingController();
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
