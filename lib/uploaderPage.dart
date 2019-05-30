@@ -81,12 +81,18 @@ class _UploaderPageState extends State<UploaderPage> {
     return true;
   }
 
-  void pushEvent(String message){
+  void resetFields(){
+    messageText.text = "";
     selectedDate = initialDateTime;
+    setState(() {
+
+    });
+
+  }
+  void pushEvent(String message){
     Firestore.instance.collection('events').document()
         .setData({ 'message': message, 'dateOfEvent': selectedDate });
-
-    showMessage(context, "DATEN ERFOLGREICH HOCHGELADEN", "", AlertType.success);
+    resetFields();
   }
 
   void onUploadButtonPressed(BuildContext context, TextEditingController textEditingController){
@@ -97,6 +103,9 @@ class _UploaderPageState extends State<UploaderPage> {
     }
 
     pushEvent(message);
+    showMessage(context, "DATEN ERFOLGREICH HOCHGELADEN", "", AlertType.success);
+    FocusScope.of(context).requestFocus(new FocusNode());
+    resetFields();
   }
 
   @override
