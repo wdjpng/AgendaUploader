@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'DropDown.dart';
+String selected;
+List<String> classes = List<String>();
 
 class UploaderPage extends StatefulWidget {
   UploaderPage({Key key, this.title}) : super(key: key);
@@ -84,14 +87,10 @@ class _UploaderPageState extends State<UploaderPage> {
   void resetFields(){
     messageText.text = "";
     selectedDate = initialDateTime;
-    setState(() {
-
-    });
-
   }
   void pushEvent(String message){
     Firestore.instance.collection('events').document()
-        .setData({ 'message': message, 'dateOfEvent': selectedDate });
+        .setData({ 'message': message, 'dateOfEvent': selectedDate, 'subject' : selected });
     resetFields();
   }
 
@@ -108,43 +107,71 @@ class _UploaderPageState extends State<UploaderPage> {
     resetFields();
   }
 
+  void updateClasses(List<DocumentSnapshot> snapshot){
+    classes = [];
+    for(var i = 0; i < snapshot.length; i++){
+      classes.add(snapshot[i]['name']);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            SizedBox(height: 20.0,),
-            RaisedButton(
-              textColor: Colors.white,
-              color: Colors.lightBlue,
-              onPressed: () => _selectDate(context),
-              child: Text(getButtonText()),
+    return StreamBuilder<QuerySnapshot>(
+      stream: Firestore.instance.collection('subjects').snapshots(),
+      builder: (BuildContext context, snapshot) {
+        if (!snapshot.hasData) return LinearProgressIndicator();
+        updateClasses(snapshot.data.documents);
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(widget.title),
+          ),
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                SizedBox(height: 20.0,),
+                RaisedButton(
+                  textColor: Colors.white,
+                  color: Colors.lightBlue,
+                  onPressed: () => _selectDate(context),
+                  child: Text(getButtonText()),
+                ),
+                new Container(
+                  width: 350.0,
+                  child:TextField(
+                      controller: messageText,
+                      keyboardType: TextInputType.multiline,
+                      maxLines: 2,
+                      decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'Nachricht'
+                      )
+                  ),
+                ),
+                DropdownButton<String>(
+                  value: selected,
+                  hint: Text('Klasse auswählen'),
+                  items: classes
+                      .map((label) => DropdownMenuItem(
+                    child: Text(label),
+                    value: label,
+                  ))
+                      .toList(),
+                  onChanged: (String newValue) {
+                    setState(() {
+                      selected = newValue;
+                    });
+                  },
+                ),
+                FloatingActionButton(
+                  onPressed: () => onUploadButtonPressed(context, messageText),
+                  tooltip: 'Bestätigen',
+                  child: Icon(Icons.cloud_upload),
+                ),
+              ],
             ),
-            new Container(
-              width: 350.0,
-              child:TextField(
-                  controller: messageText,
-                  keyboardType: TextInputType.multiline,
-                  maxLines: 2,
-                  decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Nachricht'
-                  )
-              ),
-            ),
-            FloatingActionButton(
-              onPressed: () => onUploadButtonPressed(context, messageText),
-              tooltip: 'Bestätigen',
-              child: Icon(Icons.cloud_upload),
-            ),
-          ],
-        ),
-      ),
-    );
+          ),
+        );
+      });
   }
 }
