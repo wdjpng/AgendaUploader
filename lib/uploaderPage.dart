@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'DropDown.dart';
+
 String selected;
 List<String> classes = List<String>();
 
@@ -69,14 +69,25 @@ class _UploaderPageState extends State<UploaderPage> {
   }
 
   bool isCorrectUserData(String message, BuildContext context){
-    if(message == "" || selectedDate == initialDateTime){
-      if(message == "" && selectedDate != initialDateTime){
-        showMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte geben Sie eine Nachricht ein", AlertType.error);
-      } else if(message != "" && selectedDate == initialDateTime){
-        showMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte wählen Sie ein Datum aus",  AlertType.error);
+    if(message == "" || selectedDate == initialDateTime || selected == null){
+      if(selected != null){
+        if(message == "" && selectedDate != initialDateTime){
+          showMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte geben Sie eine Nachricht ein", AlertType.error);
+        } else if(message != "" && selectedDate == initialDateTime){
+          showMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte wählen Sie ein Datum aus",  AlertType.error);
+        } else{
+          showMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte wählen Sie ein Datum aus und geben Sie bitte eine Nachricht ein",  AlertType.error);
+        }
       } else{
-        showMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte wählen Sie ein Datum aus und geben Sie bitte eine Nachricht ein",  AlertType.error);
+        if(message == "" && selectedDate != initialDateTime){
+          showMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte geben Sie eine Nachricht ein und wählen Sie eine Klasse aus", AlertType.error);
+        } else if(message != "" && selectedDate == initialDateTime){
+          showMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte wählen Sie ein Datum und eine Klasse aus",  AlertType.error);
+        } else{
+          showMessage(context, "NICHT ALLE FELDER AUSGEFÜLLT", "Bitte wählen Sie ein Datum und eine Klasse aus und geben Sie bitte eine Nachricht ein",  AlertType.error);
+        }
       }
+
 
       return false;
     }
