@@ -2,29 +2,41 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'Data.dart';
+import 'drawer.dart';
+import 'database_helpers.dart';
 
 String selected;
-List<String> classes = List<String>();
+List<String> chosenSubjects = List<String>();
 
-class UploaderPage extends StatefulWidget {
-  UploaderPage({Key key, this.title}) : super(key: key);
-
-  final String title;
+class OnlineUploaderPage extends StatefulWidget {
+  final Data data;
+  final String title = "AgendaApp";
+  OnlineUploaderPage({Key key, title, this.data}) : super(key: key);
 
   @override
-  _UploaderPageState createState() => _UploaderPageState();
+  _OnlineUploaderPageState createState() => _OnlineUploaderPageState(data);
 }
 
-class _UploaderPageState extends State<UploaderPage> {
+class _OnlineUploaderPageState extends State<OnlineUploaderPage> {
   TextEditingController messageText = new TextEditingController();
-
   DateTime selectedDate = DateTime.now();
   DateTime initialDateTime;
+  Data data;
+  bool pageIsStartedWithContext;
+
+  _OnlineUploaderPageState(Data data){
+    this.data = data;
+  }
 
   @override
   void initState() {
     super.initState();
     initialDateTime = selectedDate;
+    if(data!=null){
+      selectedDate=data.dateTime;
+    }
+    pageIsStartedWithContext=selectedDate!=initialDateTime;
   }
 
   Future<Null> _selectDate(BuildContext context) async {
@@ -95,14 +107,14 @@ class _UploaderPageState extends State<UploaderPage> {
     return true;
   }
 
-  void resetFields(){
+  void resetFields(BuildContext context){
     messageText.text = "";
     selectedDate = initialDateTime;
   }
+
   void pushEvent(String message){
     Firestore.instance.collection('events').document()
         .setData({ 'message': message, 'dateOfEvent': selectedDate, 'subject' : selected });
-    resetFields();
   }
 
   void onUploadButtonPressed(BuildContext context, TextEditingController textEditingController){
@@ -115,14 +127,36 @@ class _UploaderPageState extends State<UploaderPage> {
     pushEvent(message);
     showMessage(context, "DATEN ERFOLGREICH HOCHGELADEN", "", AlertType.success);
     FocusScope.of(context).requestFocus(new FocusNode());
-    resetFields();
+    resetFields(context);
   }
 
-  void updateClasses(List<DocumentSnapshot> snapshot){
-    classes = [];
-    for(var i = 0; i < snapshot.length; i++){
-      classes.add(snapshot[i]['name']);
+  updateChosenEvents() async{
+    DatabaseHelper helper = DatabaseHelper.instance;
+    List<Map> subjects = await helper.getSavedSubjects();
+
+    chosenSubjects = List<String>();
+
+    for(var i = 0; i < subjects.length; i++){
+      if(subjects[i][columnIsSelected] == 1){
+        chosenSubjects.add(subjects[i][columnName]);
+      }
     }
+  }
+
+  String getDropDownListHint(){
+    if(chosenSubjects.length==0){
+      return 'Bitte zuerst die Klasse(n) auswählen';
+    }
+
+    return 'Klasse auswählen';
+  }
+
+  Widget getDrawer(){
+    if(pageIsStartedWithContext){
+      return null;
+    }
+
+    return DrawerOnly();
   }
 
   @override
@@ -131,8 +165,9 @@ class _UploaderPageState extends State<UploaderPage> {
       stream: Firestore.instance.collection('subjects').snapshots(),
       builder: (BuildContext context, snapshot) {
         if (!snapshot.hasData) return LinearProgressIndicator();
-        updateClasses(snapshot.data.documents);
+        updateChosenEvents();
         return Scaffold(
+          drawer: getDrawer(),
           appBar: AppBar(
             title: Text(widget.title),
           ),
@@ -161,8 +196,8 @@ class _UploaderPageState extends State<UploaderPage> {
                 ),
                 DropdownButton<String>(
                   value: selected,
-                  hint: Text('Klasse auswählen'),
-                  items: classes
+                  hint: Text(getDropDownListHint()),
+                  items: chosenSubjects
                       .map((label) => DropdownMenuItem(
                     child: Text(label),
                     value: label,
